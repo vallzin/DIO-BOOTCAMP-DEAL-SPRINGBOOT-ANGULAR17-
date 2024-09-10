@@ -18,17 +18,42 @@ public class Main {
 		SpringApplication.run(Main.class, args);
 
 		Flyway flyway = Flyway.configure()
-				.dataSource("jdbc:mysql://localhost/jdbc-sample","jdbc-sample","123456")
+				.dataSource("jdbc:mysql://localhost/jdbc-sample", "jdbc-sample", "123456")
+				.baselineOnMigrate(true)// Adicione esta linha
+//				.cleanDisabled(false)
+//				.outOfOrder(true) // Permite migrações fora de ordem
+//				.ignoreMigrationPatterns("*:ignored") // Ignora migrações não aplicadas
 				.load();
 
+//		flyway.clean();
+//		flyway.repair();
+//		flyway.baseline();
 		flyway.migrate();
 
-		/*var employees = new EmployeeEntity();
-		employees.setName("pedro");
-		employees.setSalary(new BigDecimal("4800"));
-		employees.setBirthday(OffsetDateTime.now().minusYears(25));
-		System.out.println(employees);
-		employeeDAO.insert(employees);
-		System.out.println(employees);*/
+		var insert = new EmployeeEntity();
+		insert.setName("Augustus");
+		insert.setSalary(new BigDecimal("8800"));
+		insert.setBirthday(OffsetDateTime.now().minusYears(23));
+		System.out.println(insert);
+		employeeDAO.insert(insert);
+		System.out.println(insert);
+
+
+//		employeeDAO.findAll().forEach(System.out::println);
+
+//		System.out.println(employeeDAO.findById(1));
+
+
+		/*var update = new EmployeeEntity();
+//		update.setId(insert.getId());
+		update.setId(3);
+		update.setName("lulu");
+		update.setSalary(new BigDecimal("1000"));
+		update.setBirthday(OffsetDateTime.now().minusDays(39));
+		employeeDAO.update(update);*/
+
+
+		employeeDAO.delete(4);
+
 	}
 }

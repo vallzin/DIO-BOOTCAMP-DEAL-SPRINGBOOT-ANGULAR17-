@@ -13,5 +13,4 @@ public class EmployeeEntity {
     private BigDecimal salary;
     private OffsetDateTime birthday;
 
-
 }
