@@ -26,10 +26,9 @@ repositories {
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
 
-//	implementation("org.flywaydb:flyway-core")
-//	implementation("org.flywaydb:flyway-mysql")
-	implementation("org.flywaydb:flyway-core:9.0.0") // Use a versão mais recente
-	implementation("org.flywaydb:flyway-mysql:9.0.0") // Use a versão mais recente
+	implementation("org.flywaydb:flyway-core:10.11.1") // Use a versão mais recente
+	implementation("org.flywaydb:flyway-mysql:10.12.0") // Use a versão mais recente
+	implementation ("net.datafaker:datafaker:2.3.1")
 
 	compileOnly("org.projectlombok:lombok")
 

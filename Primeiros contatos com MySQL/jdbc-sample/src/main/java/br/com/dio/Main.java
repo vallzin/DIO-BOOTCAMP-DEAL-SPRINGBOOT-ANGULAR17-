@@ -9,17 +9,27 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Locale;
+import java.util.stream.Stream;
+import net.datafaker.Faker;
+import java.time.ZoneOffset;
+import java.util.Random;
 
 @SpringBootApplication
 public class Main {
 
 //	private final static EmployeeDAO employeeDAO = new EmployeeDAO();
+private final static Random random = new Random();
 	private final static EmployeeParamDAO employeeDAO = new EmployeeParamDAO();
 	private final static EmployeeAuditDAO employeeAuditDAO = new EmployeeAuditDAO();
+	private final static Faker faker = new Faker ( new Locale("pt","BR"));
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws SQLException {
 		SpringApplication.run(Main.class, args);
 
 		Flyway flyway = Flyway.configure()
@@ -36,13 +46,13 @@ public class Main {
 		flyway.migrate();
 
 		// Inserir um novo funcionário
-		var insert = new EmployeeEntity();
-		insert.setName("Miguel'");
-		insert.setSalary(new BigDecimal("3200"));
-		insert.setBirthday(OffsetDateTime.now().minusYears(21));
-		System.out.println(insert);
-		employeeDAO.insertWithProcedure(insert); // Chamada do método de inserção
-		System.out.println(insert);
+//		var insert = new EmployeeEntity();
+//		insert.setName("Miguel'");
+//		insert.setSalary(new BigDecimal("3200"));
+//		insert.setBirthday(OffsetDateTime.now().minusYears(21));
+//		System.out.println(insert);
+//		employeeDAO.insertWithProcedure(insert); // Chamada do método de inserção
+//		System.out.println(insert);
 //		System.out.println("Inserindo: " + insert);
 
 		// Inserir um novo funcionário
@@ -64,10 +74,8 @@ public class Main {
 		// Verificar todos os funcionários
 //		List<EmployeeEntity> employees = employeeDAO.findAll();
 //		employees.forEach(emp -> System.out.println("Funcionário: " + emp.getName() + ", ID: " + emp.getId()));
-	}
 
-
-//		employeeDAO.findAll().forEach(System.out::println);
+		employeeDAO.findAll().forEach(System.out::println);
 
 //		System.out.println(employeeDAO.findById(1));
 
@@ -84,4 +92,26 @@ public class Main {
 
 //		employeeAuditDAO.findAll().forEach(System.out::println);
 
+		var entities = Stream.generate( () ->{
+			var employee = new EmployeeEntity();
+			employee.setName(faker.name().fullName());
+			employee.setSalary(new BigDecimal(faker.number().digits(4)));
+//			// Gera uma data de aniversário aleatória entre 18 e 65 anos
+//			int age = random.nextInt(48) + 18; // Gera uma idade entre 18 e 65
+//			LocalDate birthdayLocalDate = LocalDate.now().minusYears(age);
+//			OffsetDateTime birthday = OffsetDateTime.of(birthdayLocalDate, LocalTime.MIN, ZoneOffset.UTC);
+//			employee.setBirthday(birthday);
+			employee.setBirthday(OffsetDateTime.of(LocalDate.now().minusYears(faker.number().numberBetween(40,20)), LocalTime.MIN, ZoneOffset.UTC));
+			return employee;
+		}).limit(10000).toList();
+
+		employeeDAO.insertBatch(entities);
+
+	}
+
 }
+
+
+
+
+
