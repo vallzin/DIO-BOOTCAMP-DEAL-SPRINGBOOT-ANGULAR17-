@@ -3,6 +3,7 @@ package br.com.dio;
 import br.com.dio.persistence.EmployeeAuditDAO;
 import br.com.dio.persistence.entity.EmployeeDAO;
 import br.com.dio.persistence.entity.EmployeeEntity;
+import br.com.dio.persistence.entity.EmployeeParamDAO;
 import org.flywaydb.core.Flyway;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -14,7 +15,8 @@ import java.util.List;
 @SpringBootApplication
 public class Main {
 
-	private final static EmployeeDAO employeeDAO = new EmployeeDAO();
+//	private final static EmployeeDAO employeeDAO = new EmployeeDAO();
+	private final static EmployeeParamDAO employeeDAO = new EmployeeParamDAO();
 	private final static EmployeeAuditDAO employeeAuditDAO = new EmployeeAuditDAO();
 
 	public static void main(String[] args) {
@@ -35,27 +37,29 @@ public class Main {
 
 		// Inserir um novo funcionário
 		var insert = new EmployeeEntity();
-		insert.setName("thiago");
+		insert.setName("Miguel'");
 		insert.setSalary(new BigDecimal("3200"));
 		insert.setBirthday(OffsetDateTime.now().minusYears(21));
-		employeeDAO.insert(insert); // Chamada do método de inserção
-		System.out.println("Inserindo: " + insert);
+		System.out.println(insert);
+		employeeDAO.insertWithProcedure(insert); // Chamada do método de inserção
+		System.out.println(insert);
+//		System.out.println("Inserindo: " + insert);
 
 		// Inserir um novo funcionário
-		EmployeeEntity employee1 = new EmployeeEntity();
-		employee1.setName("jose");
-		employee1.setSalary(new BigDecimal("3200"));
-		employee1.setBirthday(OffsetDateTime.now().minusYears(21));
-		employeeDAO.insert(employee1);
-		System.out.println("ID do funcionário inserido: " + employee1.getId());
+//		EmployeeEntity employee1 = new EmployeeEntity();
+//		employee1.setName("jose");
+//		employee1.setSalary(new BigDecimal("3200"));
+//		employee1.setBirthday(OffsetDateTime.now().minusYears(21));
+//		employeeDAO.insertWithProcedure(employee1);
+//		System.out.println("ID do funcionário inserido: " + employee1.getId());
 
 		// Inserir outro funcionário
-		EmployeeEntity employee2 = new EmployeeEntity();
-		employee2.setName("felipe");
-		employee2.setSalary(new BigDecimal("4000"));
-		employee2.setBirthday(OffsetDateTime.now().minusYears(25));
-		employeeDAO.insert(employee2);
-		System.out.println("ID do funcionário inserido: " + employee2.getId());
+//		EmployeeEntity employee2 = new EmployeeEntity();
+//		employee2.setName("felipe");
+//		employee2.setSalary(new BigDecimal("4000"));
+//		employee2.setBirthday(OffsetDateTime.now().minusYears(25));
+//		employeeDAO.insertWithProcedure(employee2);
+//		System.out.println("ID do funcionário inserido: " + employee2.getId());
 
 		// Verificar todos os funcionários
 //		List<EmployeeEntity> employees = employeeDAO.findAll();
