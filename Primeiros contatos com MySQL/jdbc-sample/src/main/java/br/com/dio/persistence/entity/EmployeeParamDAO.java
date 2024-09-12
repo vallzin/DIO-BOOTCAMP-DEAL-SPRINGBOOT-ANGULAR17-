@@ -15,12 +15,24 @@ import static java.util.TimeZone.LONG;
 public class EmployeeParamDAO {
 
     public void insert(final EmployeeEntity entity) {
+        String sql = "INSERT INTO employees (name, salary, birthday) VALUES (?, ?, ?)";
         try (Connection connection = ConnectionUtil.getConnection();
-             PreparedStatement statement = connection.prepareStatement("INSERT INTO employees (name, salary, birthday) VALUES (?, ?, ?)")) {
+             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
             statement.setString(1, entity.getName());
             statement.setBigDecimal(2, entity.getSalary());
-            statement.setTimestamp(3, Timestamp.valueOf(entity.getBirthday().atZoneSameInstant(UTC).toLocalDateTime()));
-            int affectedRows = statement.executeUpdate(); // Definindo a variável aqui
+            statement.setTimestamp(3, Timestamp.valueOf(entity.getBirthday().atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()));
+
+            int affectedRows = statement.executeUpdate(); // Executa a inserção
+            if (affectedRows > 0) {
+                try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        entity.setId(generatedKeys.getLong(1)); // Atualiza o ID do funcionário
+                    } else {
+                        throw new SQLException("Falha ao obter o ID gerado.");
+                    }
+                }
+            }
             System.out.printf("Foram afetados %s registros na base de dados%n", affectedRows);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -47,87 +59,60 @@ public class EmployeeParamDAO {
         }
     }
 
-//    public void insertBatch(final List<EmployeeEntity> entities) {
-//        try (Connection connection = ConnectionUtil.getConnection()){
-//            var sql = "INSERT INTO employees (name, salary, birthday) VALUES (?, ?, ?)";
-//            try(PreparedStatement statement = connection
-//                    .prepareStatement(sql)) {
-//                connection.setAutoCommit(false);
-//                for(var entity : entities){
-//                    statement.setString(1, entity.getName());
-//                    statement.setBigDecimal(2, entity.getSalary());
-//                    var timestamp = Timestamp.valueOf(entity
-//                            .getBirthday()
-//                            .atZoneSameInstant(UTC)
-//                            .toLocalDateTime());
-//                    statement.setTimestamp(3, timestamp );
-//                    statement.addBatch();
-//                }
-//                statement.executeBatch();
-//            } catch (SQLException e) {
-//                connection.rollback();
-//                e.printStackTrace();
-//            }
-//        } catch (SQLException e) {
-//
-//            e.printStackTrace();
-//        }
-//    }
+    public void insertBatch(final List<EmployeeEntity> entities) throws SQLException {
+        // Verifica se a lista de entidades não está vazia
+        if (entities == null || entities.isEmpty()) {
+            System.out.println("Nenhum funcionário para inserir.");
+            return;
+        }
 
-        public void insertBatch(final List<EmployeeEntity> entities) throws SQLException {
-            // Verifica se a lista de entidades não está vazia
-            if (entities == null || entities.isEmpty()) {
-                System.out.println("Nenhum funcionário para inserir.");
-                return;
-            }
+        try (Connection connection = ConnectionUtil.getConnection()) {
+            String sql = "INSERT INTO employees (name, salary, birthday) VALUES (?, ?, ?)";
+            // Configura o auto-commit para false
+            connection.setAutoCommit(false);
 
-            try (Connection connection = ConnectionUtil.getConnection()) {
-                String sql = "INSERT INTO employees (name, salary, birthday) VALUES (?, ?, ?)";
-                // Configura o auto-commit para false
-                connection.setAutoCommit(false);
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                int batchCount = 0;
 
-                try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                    int batchCount = 0;
+                for (EmployeeEntity entity : entities) {
+                    statement.setString(1, entity.getName());
+                    statement.setBigDecimal(2, entity.getSalary());
 
-                    for (EmployeeEntity entity : entities) {
-                        statement.setString(1, entity.getName());
-                        statement.setBigDecimal(2, entity.getSalary());
-
-                        // Converte o birthday para Timestamp
-                        OffsetDateTime birthday = entity.getBirthday();
-                        if (birthday != null) {
-                            // Converte diretamente para Timestamp
-                            statement.setTimestamp(3, Timestamp.valueOf(birthday.toLocalDateTime()));
-                        } else {
-                            statement.setNull(3, java.sql.Types.TIMESTAMP); // Define como NULL se a data for nula
-                        }
-
-                        // Adiciona a instrução ao lote
-                        statement.addBatch();
-                        batchCount++;
-
-                        if (batchCount % 1000 == 0 || batchCount == entities.size()) {
-                            // Executa o lote a cada 1000 registros ou no final
-                            statement.executeBatch();
-                        }
+                    // Converte o birthday para Timestamp
+                    OffsetDateTime birthday = entity.getBirthday();
+                    if (birthday != null) {
+                        // Converte diretamente para Timestamp
+                        statement.setTimestamp(3, Timestamp.valueOf(birthday.toLocalDateTime()));
+                    } else {
+                        statement.setNull(3, java.sql.Types.TIMESTAMP); // Define como NULL se a data for nula
                     }
 
-                    // Confirma as alterações no banco de dados
-                    connection.commit();
-                    System.out.printf("Inseridos %d funcionários.%n", entities.size());
-                } catch (SQLException e) {
-                    // Se ocorrer um erro, faz rollback
-                    connection.rollback();
-                    System.err.println("Erro ao inserir funcionários: " + e.getMessage());
-                    e.printStackTrace();
-                    throw e; // Retorna a exceção para o chamador
+                    // Adiciona a instrução ao lote
+                    statement.addBatch();
+                    batchCount++;
+
+                    if (batchCount % 1000 == 0 || batchCount == entities.size()) {
+                        // Executa o lote a cada 1000 registros ou no final
+                        statement.executeBatch();
+                    }
                 }
+
+                // Confirma as alterações no banco de dados
+                connection.commit();
+                System.out.printf("Inseridos %d funcionários.%n", entities.size());
             } catch (SQLException e) {
-                System.err.println("Erro ao conectar ao banco de dados: " + e.getMessage());
+                // Se ocorrer um erro, faz rollback
+                connection.rollback();
+                System.err.println("Erro ao inserir funcionários: " + e.getMessage());
                 e.printStackTrace();
                 throw e; // Retorna a exceção para o chamador
             }
+        } catch (SQLException e) {
+            System.err.println("Erro ao conectar ao banco de dados: " + e.getMessage());
+            e.printStackTrace();
+            throw e; // Retorna a exceção para o chamador
         }
+    }
 
     public void update(final EmployeeEntity entity) {
         try (Connection connection = ConnectionUtil.getConnection();
@@ -177,7 +162,17 @@ public class EmployeeParamDAO {
 
     public EmployeeEntity findById(final long id) {
         EmployeeEntity entity = null;
-        String sql = "SELECT * FROM employees WHERE id = ?"; // Corrigindo a string SQL
+        String sql = "SELECT e.id AS employee_id,\n"
+                    + " e.name,\n"
+                    + " e.salary,\n"
+                    + " e.birthday,\n"
+                    + " c.id AS contact_id,\n"
+                    + " c.description,\n"
+                    + " c.type\n"
+                    + "FROM employees e\n"
+                    + "LEFT JOIN contacts c\n"
+                    + "ON c.employee_id = e.id "
+                    + "WHERE e.id = ?";
         try (Connection connection = ConnectionUtil.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) { // Usando a string SQL aqui
             statement.setLong(1, id);
@@ -189,6 +184,10 @@ public class EmployeeParamDAO {
                     entity.setSalary(resultSet.getBigDecimal("salary"));
                     var birthdayInstant = resultSet.getTimestamp("birthday").toInstant();
                     entity.setBirthday(OffsetDateTime.ofInstant(birthdayInstant, UTC));
+                    entity.setContact(new ContactEntity());
+                    entity.getContact().setId(resultSet.getLong("contact_id"));
+                    entity.getContact().setDescription(resultSet.getString("description"));
+                    entity.getContact().setType(resultSet.getString("type"));
                 }
             }
         } catch (SQLException e) {

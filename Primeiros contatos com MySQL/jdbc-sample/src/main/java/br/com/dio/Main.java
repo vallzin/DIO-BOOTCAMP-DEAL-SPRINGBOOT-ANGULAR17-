@@ -1,33 +1,29 @@
 package br.com.dio;
 
 import br.com.dio.persistence.EmployeeAuditDAO;
-import br.com.dio.persistence.entity.EmployeeDAO;
-import br.com.dio.persistence.entity.EmployeeEntity;
-import br.com.dio.persistence.entity.EmployeeParamDAO;
+import br.com.dio.persistence.entity.*;
 import org.flywaydb.core.Flyway;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.Locale;
-import java.util.stream.Stream;
+
 import net.datafaker.Faker;
-import java.time.ZoneOffset;
+
 import java.util.Random;
 
 @SpringBootApplication
 public class Main {
 
 //	private final static EmployeeDAO employeeDAO = new EmployeeDAO();
-private final static Random random = new Random();
+	private final static Random random = new Random();
 	private final static EmployeeParamDAO employeeDAO = new EmployeeParamDAO();
 	private final static EmployeeAuditDAO employeeAuditDAO = new EmployeeAuditDAO();
 	private final static Faker faker = new Faker ( new Locale("pt","BR"));
+	private final static ContactDAO contactDAO = new ContactDAO();
 
 	public static void main(String[] args) throws SQLException {
 		SpringApplication.run(Main.class, args);
@@ -45,7 +41,7 @@ private final static Random random = new Random();
 		flyway.baseline();
 		flyway.migrate();
 
-		// Inserir um novo funcionário
+//		 Inserir um novo funcionário
 //		var insert = new EmployeeEntity();
 //		insert.setName("Miguel'");
 //		insert.setSalary(new BigDecimal("3200"));
@@ -53,7 +49,6 @@ private final static Random random = new Random();
 //		System.out.println(insert);
 //		employeeDAO.insertWithProcedure(insert); // Chamada do método de inserção
 //		System.out.println(insert);
-//		System.out.println("Inserindo: " + insert);
 
 		// Inserir um novo funcionário
 //		EmployeeEntity employee1 = new EmployeeEntity();
@@ -75,7 +70,7 @@ private final static Random random = new Random();
 //		List<EmployeeEntity> employees = employeeDAO.findAll();
 //		employees.forEach(emp -> System.out.println("Funcionário: " + emp.getName() + ", ID: " + emp.getId()));
 
-		employeeDAO.findAll().forEach(System.out::println);
+//		employeeDAO.findAll().forEach(System.out::println);
 
 //		System.out.println(employeeDAO.findById(1));
 
@@ -92,6 +87,7 @@ private final static Random random = new Random();
 
 //		employeeAuditDAO.findAll().forEach(System.out::println);
 
+		/*
 		var entities = Stream.generate( () ->{
 			var employee = new EmployeeEntity();
 			employee.setName(faker.name().fullName());
@@ -106,8 +102,53 @@ private final static Random random = new Random();
 		}).limit(10000).toList();
 
 		employeeDAO.insertBatch(entities);
+		*/
+
+		/*
+		EmployeeDAO employeeDAO = new EmployeeDAO();
+		EmployeeEntity employee = new EmployeeEntity();
+
+		employee.setName("Antonio");
+		employee.setSalary(new BigDecimal("3200"));
+		employee.setBirthday(OffsetDateTime.now().minusYears(21));
+
+		employeeDAO.insert(employee); // Chamada do método de inserção
+
+		// Verifique se o ID foi atribuído corretamente
+		if (employee.getId() <= 0) {
+			throw new IllegalStateException("Erro: O ID do funcionário não foi gerado.");
+		}
+
+		System.out.println("Funcionário inserido com ID: " + employee.getId());
+		*/
+
+//		var employee = new EmployeeEntity();
+//		employee.setName("jojo");
+//		employee.setSalary(new BigDecimal("1200"));
+//		employee.setBirthday(OffsetDateTime.now().minusYears(25));
+//		employeeDAO.insert(employee); // Chamada do método de inserção
+//
+//// 		Verifique se o ID foi atribuído corretamente
+//		if (employee.getId() <= 0) {
+//			throw new IllegalStateException("Erro: O ID do funcionário não foi gerado.");
+//		}
+
+//		System.out.println("Funcionário inserido com ID: " + employee.getId());
+
+//		// Criar um novo contato
+//		var contact = new ContactEntity(); // Use ContactEntity aqui
+//		contact.setDescription("antonio@ant.com");
+//		contact.setType("E-mail");
+//		contact.setEmployee(employee); // Associa o contato ao funcionário
+//
+//// 		Inserir o contato
+//		contactDAO.insert(contact);
+//		System.out.println("Contato inserido: " + contact);
+
+		System.out.println(employeeDAO.findById(1));
 
 	}
+
 
 }
 
